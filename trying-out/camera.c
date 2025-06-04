@@ -56,7 +56,8 @@ int main() {
 
     // update camera
     camera.target = player_pos;
-    camera.zoom += dt * 10 * (IsKeyDown(KEY_W) - IsKeyDown(KEY_Q));
+    camera.zoom += dt * 2 * (IsKeyDown(KEY_W) - IsKeyDown(KEY_Q));
+    camera.zoom = Clamp(camera.zoom, 0.2, 5);
 
     BeginDrawing();
     BeginMode2D(camera);
