@@ -13,14 +13,29 @@ int main() {
   while (!WindowShouldClose()) {
     // updating
     float dt = GetFrameTime(); // delta time
-    ship_pos.x += ship_speed * dt * direction.x;
-    ship_pos.y += ship_speed * dt * direction.y;
+    // ship_pos.x += ship_speed * dt * direction.x;
+    // ship_pos.y += ship_speed * dt * direction.y;
 
-    if (0 > ship_pos.x || ship_pos.x > GetScreenWidth() - ship_texture.width)
-      direction.x = -direction.x;
+    // if (0 > ship_pos.x || ship_pos.x > GetScreenWidth() - ship_texture.width)
+    //   direction.x = -direction.x;
 
-    if (0 > ship_pos.y || ship_pos.y > GetScreenHeight() - ship_texture.height)
-      direction.y = -direction.y;
+    // if (0 > ship_pos.y || ship_pos.y > GetScreenHeight() -
+    // ship_texture.height)
+    //   direction.y = -direction.y;
+
+    // move ship by using mouse movement
+    // ship_pos = GetMousePosition();
+
+    // move ship using keys
+
+    if (IsKeyDown(KEY_S))
+      ship_pos.y += ship_speed * dt;
+    if (IsKeyDown(KEY_W))
+      ship_pos.y -= ship_speed * dt;
+    if (IsKeyDown(KEY_A))
+      ship_pos.x -= ship_speed * dt;
+    if (IsKeyDown(KEY_D))
+      ship_pos.x += ship_speed * dt;
 
     // handles drawing objects to the screen
     BeginDrawing();
