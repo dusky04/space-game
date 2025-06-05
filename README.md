@@ -2,6 +2,8 @@
 
 A classic arcade-style space shooter game built in C using the Raylib graphics library. Control your spaceship, dodge asteroids, and blast them out of the sky with lasers!
 
+![screenshot](assets/image.png)
+
 ## Game Controls
 
 | Key/Input | Action |
