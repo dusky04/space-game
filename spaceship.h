@@ -29,7 +29,6 @@ typedef struct {
 
 Spaceship CreateSpaceship(const char *filename);
 void UpdateSpaceshipPosition(Spaceship *spaceship, float dt);
-void DeleteSpaceship(Spaceship *spaceship);
 
 typedef struct {
   Texture2D *texture;

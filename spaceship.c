@@ -23,10 +23,6 @@ void UpdateSpaceshipPosition(Spaceship *spaceship, float dt) {
                                 SCREEN_HEIGHT - spaceship->texture.height);
 }
 
-void DeleteSpaceship(Spaceship *spaceship) {
-  UnloadTexture(spaceship->texture);
-}
-
 Star *CreateStars(Texture2D *texture) {
   Star *stars = (Star *)malloc(sizeof(Star) * NUM_STARS);
   for (size_t i = 0; i < NUM_STARS; i++) {
@@ -39,12 +35,7 @@ Star *CreateStars(Texture2D *texture) {
   return stars;
 }
 
-void DeleteStars(Star *stars) {
-  for (size_t i = 0; i < NUM_STARS; i++) {
-    UnloadTexture(*stars[i].texture);
-  }
-  free(stars);
-}
+void DeleteStars(Star *stars) { free(stars); }
 
 Laser *CreateLaser(Texture2D *texture) {
   Laser *lasers = (Laser *)malloc(sizeof(Laser) * NUM_LASERS);
@@ -67,12 +58,7 @@ void UpdateLasers(Laser *lasers, float dt) {
   }
 }
 
-void DeleteLasers(Laser *lasers) {
-  for (size_t i = 0; i < NUM_LASERS; i++) {
-    UnloadTexture(*lasers[i].texture);
-  }
-  free(lasers);
-}
+void DeleteLasers(Laser *lasers) { free(lasers); }
 
 int main() {
   srand(time(NULL));
@@ -133,7 +119,9 @@ int main() {
 
   // ----------------------------------------------------------------------
   // cleanup
-  DeleteSpaceship(&spaceship);
+  UnloadTexture(spaceship.texture);
+  UnloadTexture(star_texture);
+  UnloadTexture(laser_texture);
   DeleteLasers(lasers);
   DeleteStars(stars);
   CloseWindow();
