@@ -15,6 +15,8 @@
 #define NUM_LASERS 10
 #define NUM_ASTEROIDS 10
 
+#define ASTEROID_DURATION 0.4
+
 #define BACKGROUND_COLOR                                                       \
   CLITERAL(Color) { 28, 22, 37, 255 }
 
@@ -45,14 +47,25 @@ typedef struct {
   bool inview;
 } Laser;
 
-Laser *CreateLaser(Texture2D *texture);
+Laser *CreateLasers(Texture2D *texture);
 void UpdateLasers(Laser *lasers, float dt);
 void DeleteLasers(Laser *lasers);
 
 typedef struct {
-  Texture2D texture;
+  Texture2D *texture;
   Vector2 position;
   Vector2 direction;
-} Meteor;
+  bool inview;
+} Asteroid;
+
+typedef struct {
+  double duration;
+  double start_time;
+  bool active;
+  bool repeat;
+} Timer;
+
+Timer CreateTimer(double duration, bool repeat, bool autostart);
+void StartTimer(Timer *timer);
 
 #endif
