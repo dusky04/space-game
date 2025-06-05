@@ -10,6 +10,7 @@
 #define SPACESHIP_SPEED 400
 #define LASER_SPEED 600
 #define ASTEROID_SPEED 400
+#define ASTEROID_ROTATION_SPEED 50
 
 #define NUM_STARS 30
 #define NUM_LASERS 10
@@ -27,35 +28,35 @@ typedef struct {
   Texture2D texture;
   Vector2 position;
   Vector2 direction;
+  float collision_radius;
 } Spaceship;
 
 Spaceship CreateSpaceship(const char *filename);
 void UpdateSpaceshipPosition(Spaceship *spaceship, float dt);
 
 typedef struct {
-  Texture2D *texture;
   Vector2 position;
   float scale;
 } Star;
 
-Star *CreateStars(Texture2D *texture);
+Star *CreateStars();
 void DeleteStars(Star *stars);
 
 typedef struct {
-  Texture2D *texture;
   Vector2 position;
   bool inview;
 } Laser;
 
-Laser *CreateLasers(Texture2D *texture);
+Laser *CreateLasers();
 void UpdateLasers(Laser *lasers, float dt);
 void DeleteLasers(Laser *lasers);
 
 typedef struct {
-  Texture2D *texture;
   Vector2 position;
   Vector2 direction;
   bool inview;
+  double rotation;
+  float collision_radius;
 } Asteroid;
 
 typedef struct {
