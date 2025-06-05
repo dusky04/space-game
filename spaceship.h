@@ -15,8 +15,10 @@
 #define NUM_STARS 30
 #define NUM_LASERS 10
 #define NUM_ASTEROIDS 10
+#define NUM_EXPLOSIONS 10
 
 #define ASTEROID_DURATION 0.4
+#define BOOM_ANIMATION_SPEED 10
 
 #define BACKGROUND_COLOR                                                       \
   CLITERAL(Color) { 28, 22, 37, 255 }
@@ -45,6 +47,7 @@ void DeleteStars(Star *stars);
 typedef struct {
   Vector2 position;
   bool inview;
+  Rectangle rec;
 } Laser;
 
 Laser *CreateLasers();
@@ -57,6 +60,7 @@ typedef struct {
   bool inview;
   double rotation;
   float collision_radius;
+  Rectangle rec;
 } Asteroid;
 
 typedef struct {
@@ -68,5 +72,12 @@ typedef struct {
 
 Timer CreateTimer(double duration, bool repeat, bool autostart);
 void StartTimer(Timer *timer);
+
+typedef struct {
+  Vector2 size;
+  Vector2 position;
+  bool inview;
+  int index;
+} Boom;
 
 #endif
