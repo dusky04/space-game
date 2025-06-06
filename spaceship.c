@@ -9,49 +9,43 @@
 // TODO: improve asteroid collision with laser
 // TODO: figure out why explosions aren't appearing
 
-Spaceship CreateSpaceship(const char *filename) {
-  Spaceship spaceship = {0};
-  spaceship.texture = LoadTexture(filename);
-  spaceship.position = (Vector2){(SCREEN_WIDTH - spaceship.texture.width) / 2.0,
-                                 SCREEN_HEIGHT / 2.0};
-  spaceship.direction = (Vector2){0};
-  spaceship.collision_radius = spaceship.texture.height / 2.0;
-  return spaceship;
+void CreateSpaceship(Game *game, Textures *textures) {
+  game->ship.texture = &textures->ship_texture;
+  game->ship.position = (Vector2){
+      (SCREEN_WIDTH - game->ship.texture->width) / 2.0, SCREEN_HEIGHT / 2.0};
+  game->ship.direction = (Vector2){0};
+  game->ship.collision_radius = game->ship.texture->height / 2.0;
 }
 
-void UpdateSpaceship(Spaceship *spaceship, float dt) {
-  spaceship->position.x += dt * SPACESHIP_SPEED * spaceship->direction.x;
-  spaceship->position.x =
-      Clamp(spaceship->position.x, 0, SCREEN_WIDTH - spaceship->texture.width);
-  spaceship->position.y += dt * SPACESHIP_SPEED * spaceship->direction.y;
-  spaceship->position.y = Clamp(spaceship->position.y, 0,
-                                SCREEN_HEIGHT - spaceship->texture.height);
+void UpdateSpaceship(Game *game, float dt) {
+  game->ship.position.x += dt * SPACESHIP_SPEED * game->ship.direction.x;
+  game->ship.position.x =
+      Clamp(game->ship.position.x, 0, SCREEN_WIDTH - game->ship.texture->width);
+  game->ship.position.y += dt * SPACESHIP_SPEED * game->ship.direction.y;
+  game->ship.position.y = Clamp(game->ship.position.y, 0,
+                                SCREEN_HEIGHT - game->ship.texture->height);
 }
 
-Vector2 GetSpaceshipCenter(Spaceship *spaceship) {
-  return (Vector2){.x = spaceship->position.x + spaceship->texture.width / 2.0,
-                   .y =
-                       spaceship->position.y + spaceship->texture.height / 2.0};
+Vector2 GetSpaceshipCenter(Game *game) {
+  return (Vector2){.x = game->ship.position.x + game->ship.texture->width / 2.0,
+                   .y = game->ship.position.y +
+                        game->ship.texture->height / 2.0};
 }
 
-Star *CreateStars() {
-  Star *stars = (Star *)malloc(sizeof(Star) * NUM_STARS);
+void CreateStars(Game *game) {
   for (size_t i = 0; i < NUM_STARS; i++) {
-    stars[i].position = (Vector2){.x = RANDINT(0, SCREEN_WIDTH),
-                                  .y = RANDINT(0, SCREEN_HEIGHT)};
-    stars[i].scale = RANDFLOAT(0.5, 1.6);
+    game->stars[i].position = (Vector2){.x = RANDINT(0, SCREEN_WIDTH),
+                                        .y = RANDINT(0, SCREEN_HEIGHT)};
+    game->stars[i].scale = RANDFLOAT(0.5, 1.6);
   }
-  return stars;
 }
 
-Laser *CreateLasers() {
-  Laser *lasers = (Laser *)malloc(sizeof(Laser) * NUM_LASERS);
+void CreateLasers(Game *game) {
   for (size_t i = 0; i < NUM_LASERS; i++) {
-    lasers[i].position = (Vector2){0};
-    lasers[i].inview = false;
-    lasers[i].rec = (Rectangle){0};
+    game->lasers[i].position = (Vector2){0};
+    game->lasers[i].inview = false;
+    game->lasers[i].rec = (Rectangle){0};
   }
-  return lasers;
 }
 
 void UpdateLasers(Laser *lasers, float dt) {
@@ -65,18 +59,20 @@ void UpdateLasers(Laser *lasers, float dt) {
   }
 }
 
-Asteroid *CreateAsteroids(Texture2D *texture) {
-  Asteroid *asteroids = (Asteroid *)malloc(sizeof(Asteroid) * NUM_ASTEROIDS);
+void CreateAsteroids(Game *game, Textures *textures) {
   for (size_t i = 0; i < NUM_ASTEROIDS; i++) {
-    asteroids[i].position = (Vector2){0};
-    asteroids[i].direction = (Vector2){0};
-    asteroids[i].inview = false;
-    asteroids[i].rotation = 0.0;
-    asteroids[i].collision_radius = texture->height / 2.0;
-    asteroids[i].rec = (Rectangle){
-        .x = 0, .y = 0, .width = texture->width, .height = texture->height};
+    game->asteroids[i].position = (Vector2){0};
+    game->asteroids[i].direction = (Vector2){0};
+    game->asteroids[i].inview = false;
+    game->asteroids[i].rotation = 0.0;
+    game->asteroids[i].collision_radius =
+        textures->asteroid_texture.height / 2.0;
+    game->asteroids[i].rec =
+        (Rectangle){.x = 0,
+                    .y = 0,
+                    .width = textures->asteroid_texture.width,
+                    .height = textures->asteroid_texture.height};
   }
-  return asteroids;
 }
 
 void UpdateAsteroid(Asteroid *asteroids, float dt) {
@@ -104,7 +100,7 @@ int SpawnAsteroid(Asteroid *asteroids, int asteroid_idx) {
       (Vector2){.x = RANDINT(0, SCREEN_WIDTH), .y = 0};
   asteroids[asteroid_idx].direction =
       (Vector2){.x = RANDFLOAT(-0.5, 0.5), .y = 1};
-  return (asteroid_idx + 1) % NUM_ASTEROIDS;
+  return MOD(asteroid_idx, NUM_ASTEROIDS);
 }
 
 Timer CreateTimer(double duration, bool repeat, bool autostart) {
@@ -142,29 +138,55 @@ int UpdateTimer(Timer *timer, Asteroid *asteroids, int asteroid_idx, double t) {
   return asteroid_idx;
 }
 
-Boom *CreateBooms(Texture2D *texture) {
-  Boom *booms = malloc(sizeof(Boom) * NUM_EXPLOSIONS);
+void CreateBooms(Game *game, Textures *textures) {
   for (size_t i = 0; i < NUM_EXPLOSIONS; i++) {
-    booms[i].size = (Vector2){.x = texture[0].width, .y = texture[0].height};
-    booms[i].position = (Vector2){0};
-    booms[i].inview = false;
-    booms[i].index = 0;
+    game->booms[i].size = (Vector2){.x = textures->boom_textures[0].width,
+                                    .y = textures->boom_textures[0].height};
+    game->booms[i].position = (Vector2){0};
+    game->booms[i].inview = false;
+    game->booms[i].index = 0;
   }
-  return booms;
 }
 
 int DrawBoom(Boom *booms, int boom_idx, Vector2 position) {
   booms[boom_idx].inview = true;
   booms[boom_idx].position = position;
-  return (boom_idx + 1) % NUM_EXPLOSIONS;
+  return MOD(boom_idx, NUM_EXPLOSIONS);
 }
 
 void UpdateBoom(Boom *booms, float dt) {
   for (size_t i = 0; i < NUM_EXPLOSIONS; i++) {
-    if (booms[i].inview && booms[i].index <= NUM_EXPLOSIONS) {
-      booms[i].index += BOOM_ANIMATION_SPEED * dt;
+    if (booms[i].inview) {
+      booms[i].index += (int)(BOOM_ANIMATION_SPEED * dt);
+      if (booms[i].index >= BOOM_ANIMATION_FRAMES) {
+        booms[i].inview = false;
+        booms[i].index = 0;
+      }
     }
   }
+}
+
+void LoadTextures(Textures *textures) {
+  textures->ship_texture = LoadTexture("assets/spaceship.png");
+  textures->star_texture = LoadTexture("assets/star.png");
+  textures->laser_texture = LoadTexture("assets/laser.png");
+  textures->asteroid_texture = LoadTexture("assets/asteroid.png");
+  for (size_t i = 0; i < BOOM_ANIMATION_FRAMES; i++) {
+    char buffer[30];
+    sprintf(buffer, "assets/explosion/%zu.png", i + 1);
+    textures->boom_textures[i] = LoadTexture(buffer);
+  }
+}
+
+void InitGame(Game *game, Textures *textures) {
+  CreateSpaceship(game, textures);
+  CreateStars(game);
+  CreateLasers(game);
+  CreateAsteroids(game, textures);
+  CreateBooms(game, textures);
+  game->boom_idx = 0;
+  game->laser_idx = 0;
+  game->asteroid_idx = 0;
 }
 
 int main() {
@@ -176,21 +198,11 @@ int main() {
   SetTargetFPS(60);
 
   // load the textures
-  Spaceship spaceship = CreateSpaceship("assets/spaceship.png");
-  Texture2D star_texture = LoadTexture("assets/star.png");
-  Texture2D laser_texture = LoadTexture("assets/laser.png");
-  Texture2D asteroid_texture = LoadTexture("assets/asteroid.png");
-  Texture2D *boom_textures = (malloc(sizeof(Texture2D) * NUM_EXPLOSIONS));
-  for (size_t i = 0; i < NUM_EXPLOSIONS; i++) {
-    char buffer[25];
-    sprintf(buffer, "assets/explosion/%zu.png", i);
-    boom_textures[i] = LoadTexture(buffer);
-  }
+  Textures textures = {0};
+  LoadTextures(&textures);
 
-  Star *stars = CreateStars();
-  Laser *lasers = CreateLasers();
-  Asteroid *asteroids = CreateAsteroids(&asteroid_texture);
-  Boom *booms = CreateBooms(boom_textures);
+  Game game = {0};
+  InitGame(&game, &textures);
 
   // load audio
   Sound laser_sound = LoadSound("assets/laser.wav");
@@ -198,48 +210,47 @@ int main() {
   // start the timer
   Timer timer = CreateTimer(ASTEROID_DURATION, true, true);
 
-  int boom_idx = 0;
-  int laser_idx = 0;
-  int asteroid_idx = 0;
   while (!WindowShouldClose()) {
     //  -----------------------------------------------------------------------
     // handling user input
-    spaceship.direction.x = IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
-    spaceship.direction.y = IsKeyDown(KEY_S) - IsKeyDown(KEY_W);
-    if (spaceship.position.x != 0 || spaceship.position.y != 0)
-      spaceship.direction = Vector2Normalize(spaceship.direction);
+    game.ship.direction.x = IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
+    game.ship.direction.y = IsKeyDown(KEY_S) - IsKeyDown(KEY_W);
+    if (game.ship.position.x != 0 || game.ship.position.y != 0)
+      game.ship.direction = Vector2Normalize(game.ship.direction);
 
     if (IsKeyPressed(KEY_SPACE) || IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      laser_idx = (laser_idx + 1) % NUM_LASERS;
-      lasers[laser_idx].inview = true;
-      lasers[laser_idx].position =
-          (Vector2){.x = spaceship.position.x + spaceship.texture.width / 2.2,
-                    .y = spaceship.position.y - spaceship.texture.height / 2.0};
-      lasers[laser_idx].rec = (Rectangle){.x = lasers[laser_idx].position.x,
-                                          .y = lasers[laser_idx].position.y,
-                                          .width = laser_texture.width,
-                                          .height = laser_texture.height};
+      game.laser_idx = MOD(game.laser_idx, NUM_LASERS);
+      game.lasers[game.laser_idx].inview = true;
+      game.lasers[game.laser_idx].position = (Vector2){
+          .x = game.ship.position.x + game.ship.texture->width / 2.2,
+          .y = game.ship.position.y - game.ship.texture->height / 2.0};
+      game.lasers[game.laser_idx].rec =
+          (Rectangle){.x = game.lasers[game.laser_idx].position.x,
+                      .y = game.lasers[game.laser_idx].position.y,
+                      .width = textures.laser_texture.width,
+                      .height = textures.laser_texture.height};
       PlaySound(laser_sound);
     }
 
     //  -----------------------------------------------------------------------
     // updating the frame
     float dt = GetFrameTime(); // delta time
-    UpdateSpaceship(&spaceship, dt);
-    UpdateLasers(lasers, dt);
-    UpdateBoom(booms, dt);
+    UpdateSpaceship(&game, dt);
+    UpdateLasers(game.lasers, dt);
+    UpdateBoom(game.booms, dt);
 
     double t = GetTime();
-    asteroid_idx = UpdateTimer(&timer, asteroids, asteroid_idx, t);
-    UpdateAsteroid(asteroids, dt);
+    game.asteroid_idx =
+        UpdateTimer(&timer, game.asteroids, game.asteroid_idx, t);
+    UpdateAsteroid(game.asteroids, dt);
 
     // checking collision between spaceship and meteor
     for (size_t i = 0; i < NUM_ASTEROIDS; i++) {
-      if (asteroids[i].inview) {
-        if (CheckCollisionCircles(GetSpaceshipCenter(&spaceship),
-                                  spaceship.collision_radius,
-                                  GetAsteroidCenter(&asteroids[i]),
-                                  asteroids[i].collision_radius)) {
+      if (game.asteroids[i].inview) {
+        if (CheckCollisionCircles(GetSpaceshipCenter(&game),
+                                  game.ship.collision_radius,
+                                  GetAsteroidCenter(&game.asteroids[i]),
+                                  game.asteroids[i].collision_radius)) {
           printf("Collsion");
         }
       }
@@ -248,16 +259,17 @@ int main() {
     // checking collison between laser and meteor
     for (size_t i = 0; i < NUM_LASERS; i++) {
       for (size_t j = 0; j < NUM_ASTEROIDS; j++) {
-        if (lasers[i].inview && asteroids[j].inview) {
-          if (CheckCollisionCircleRec(GetAsteroidCenter(&asteroids[j]),
-                                      asteroids[j].collision_radius,
-                                      lasers[i].rec)) {
-            lasers[i].inview = false;
-            asteroids[j].inview = false;
-            boom_idx = DrawBoom(
-                booms, boom_idx,
-                (Vector2){.x = lasers[i].position.x - laser_texture.width,
-                          .y = lasers[i].position.y});
+        if (game.lasers[i].inview && game.asteroids[j].inview) {
+          if (CheckCollisionCircleRec(GetAsteroidCenter(&game.asteroids[j]),
+                                      game.asteroids[j].collision_radius,
+                                      game.lasers[i].rec)) {
+            game.lasers[i].inview = false;
+            game.asteroids[j].inview = false;
+            game.boom_idx =
+                DrawBoom(game.booms, game.boom_idx,
+                         (Vector2){.x = game.lasers[i].position.x -
+                                        textures.laser_texture.width,
+                                   .y = game.lasers[i].position.y});
           }
         }
       }
@@ -268,29 +280,30 @@ int main() {
     {
       ClearBackground(BACKGROUND_COLOR);
       for (size_t i = 0; i < NUM_STARS; i++)
-        DrawTextureEx(star_texture, stars[i].position, 0.0, stars[i].scale,
-                      WHITE);
-      DrawTextureV(spaceship.texture, spaceship.position, WHITE);
+        DrawTextureEx(textures.star_texture, game.stars[i].position, 0.0,
+                      game.stars[i].scale, WHITE);
+      DrawTextureV(textures.ship_texture, game.ship.position, WHITE);
       for (size_t i = 0; i < NUM_LASERS; i++) {
-        if (lasers[i].inview)
-          DrawTextureV(laser_texture, lasers[i].position, WHITE);
+        if (game.lasers[i].inview)
+          DrawTextureV(textures.laser_texture, game.lasers[i].position, WHITE);
       }
 
       for (size_t i = 0; i < NUM_ASTEROIDS; i++) {
-        if (asteroids[i].inview)
+        if (game.asteroids[i].inview)
           DrawTexturePro(
-              asteroid_texture, asteroids[i].rec,
-              (Rectangle){.x = asteroids[i].position.x,
-                          .y = asteroids[i].position.y,
-                          .width = asteroid_texture.width,
-                          .height = asteroid_texture.height},
-              (Vector2){laser_texture.width / 2.0, laser_texture.height / 2.0},
-              asteroids[i].rotation, WHITE);
+              textures.asteroid_texture, game.asteroids[i].rec,
+              (Rectangle){.x = game.asteroids[i].position.x,
+                          .y = game.asteroids[i].position.y,
+                          .width = textures.asteroid_texture.width,
+                          .height = textures.asteroid_texture.height},
+              (Vector2){textures.laser_texture.width / 2.0,
+                        textures.laser_texture.height / 2.0},
+              game.asteroids[i].rotation, WHITE);
       }
       for (size_t i = 0; i < NUM_EXPLOSIONS; i++) {
-        if (booms[i].inview) {
-          DrawTextureEx(boom_textures[booms[i].index], booms[i].position, 0.0,
-                        1.0, WHITE);
+        if (game.booms[i].inview) {
+          DrawTextureEx(textures.boom_textures[game.booms[i].index],
+                        game.booms[i].position, 0.0, 1.0, WHITE);
         }
       }
       DrawFPS(0, 0);
@@ -301,12 +314,15 @@ int main() {
   // ----------------------------------------------------------------------
   // cleanup
   UnloadSound(laser_sound);
-  UnloadTexture(spaceship.texture);
-  UnloadTexture(star_texture);
-  UnloadTexture(laser_texture);
-  free(lasers);
-  UnloadTexture(asteroid_texture);
-  free(stars);
+  UnloadTexture(textures.ship_texture);
+  UnloadTexture(textures.star_texture);
+  UnloadTexture(textures.laser_texture);
+  // free(lasers);
+  UnloadTexture(textures.asteroid_texture);
+  for (size_t i = 0; i < BOOM_ANIMATION_FRAMES; i++) {
+    UnloadTexture(textures.boom_textures[i]);
+  }
+  // free(game.stars);
   CloseAudioDevice();
   CloseWindow();
 }

@@ -20,38 +20,33 @@
 #define ASTEROID_DURATION 0.4
 #define BOOM_ANIMATION_SPEED 10
 
+#define BOOM_ANIMATION_FRAMES 28
+
 #define BACKGROUND_COLOR                                                       \
   CLITERAL(Color) { 28, 22, 37, 255 }
 
 #define RANDINT(min, max) (rand() % (max - min + 1) + min)
 #define RANDFLOAT(min, max) (((max - min) * (float)rand() / RAND_MAX) + min)
 
+#define MOD(idx, max) ((idx + 1) % max)
+
 typedef struct {
-  Texture2D texture;
+  Texture2D *texture;
   Vector2 position;
   Vector2 direction;
   float collision_radius;
 } Spaceship;
-
-Spaceship CreateSpaceship(const char *filename);
-void UpdateSpaceship(Spaceship *spaceship, float dt);
-Vector2 GetSpaceShipCenter(Spaceship *spaceship);
 
 typedef struct {
   Vector2 position;
   float scale;
 } Star;
 
-Star *CreateStars();
-
 typedef struct {
   Vector2 position;
   Rectangle rec;
   bool inview;
 } Laser;
-
-Laser *CreateLasers();
-void UpdateLasers(Laser *lasers, float dt);
 
 typedef struct {
   Vector2 position;
@@ -62,7 +57,42 @@ typedef struct {
   float collision_radius;
 } Asteroid;
 
-Asteroid *CreateAsteroids(Texture2D *texture);
+typedef struct {
+  Vector2 size;
+  Vector2 position;
+  bool inview;
+  int index;
+} Boom;
+
+typedef struct {
+  Texture2D ship_texture;
+  Texture2D star_texture;
+  Texture2D laser_texture;
+  Texture2D asteroid_texture;
+  Texture2D boom_textures[BOOM_ANIMATION_FRAMES];
+} Textures;
+
+typedef struct {
+  Spaceship ship;
+  Star stars[NUM_STARS];
+  Laser lasers[NUM_LASERS];
+  Boom booms[NUM_EXPLOSIONS];
+  Asteroid asteroids[NUM_ASTEROIDS];
+  int boom_idx;
+  int laser_idx;
+  int asteroid_idx;
+} Game;
+
+void CreateSpaceship(Game *game, Textures *textures);
+void UpdateSpaceship(Game *game, float dt);
+Vector2 GetSpaceShipCenter(Game *game);
+
+void CreateStars(Game *game);
+
+void CreateLasers(Game *game);
+void UpdateLasers(Laser *lasers, float dt);
+
+void CreateAsteroids(Game *game, Textures *textures);
 void UpdateAsteroid(Asteroid *asteroids, float dt);
 Vector2 GetAsteroidCenter(Asteroid *asteroid);
 int SpawnAsteroid(Asteroid *asteroids, int asteroid_idx);
@@ -79,14 +109,7 @@ void StartTimer(Timer *timer);
 void StopTimer(Timer *timer);
 int UpdateTimer(Timer *timer, Asteroid *asteroids, int asteroid_idx, double t);
 
-typedef struct {
-  Vector2 size;
-  Vector2 position;
-  bool inview;
-  int index;
-} Boom;
-
-Boom *CreateBooms(Texture2D *texture);
+void CreateBooms(Game *game, Textures *textures);
 int DrawBoom(Boom *booms, int boom_idx, Vector2 position);
 void UpdateBoom(Boom *booms, float dt);
 
