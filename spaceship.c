@@ -19,7 +19,7 @@ Spaceship CreateSpaceship(const char *filename) {
   return spaceship;
 }
 
-void UpdateSpaceshipPosition(Spaceship *spaceship, float dt) {
+void UpdateSpaceship(Spaceship *spaceship, float dt) {
   spaceship->position.x += dt * SPACESHIP_SPEED * spaceship->direction.x;
   spaceship->position.x =
       Clamp(spaceship->position.x, 0, SCREEN_WIDTH - spaceship->texture.width);
@@ -44,8 +44,6 @@ Star *CreateStars() {
   return stars;
 }
 
-void DeleteStars(Star *stars) { free(stars); }
-
 Laser *CreateLasers() {
   Laser *lasers = (Laser *)malloc(sizeof(Laser) * NUM_LASERS);
   for (size_t i = 0; i < NUM_LASERS; i++) {
@@ -61,12 +59,11 @@ void UpdateLasers(Laser *lasers, float dt) {
     if (lasers[i].inview)
       lasers[i].position.y -= dt * LASER_SPEED;
 
+    // if the laser is out of view, don't render it
     if (lasers[i].position.y < 0)
       lasers[i].inview = false;
   }
 }
-
-void DeleteLasers(Laser *lasers) { free(lasers); }
 
 Asteroid *CreateAsteroids(Texture2D *texture) {
   Asteroid *asteroids = (Asteroid *)malloc(sizeof(Asteroid) * NUM_ASTEROIDS);
@@ -101,6 +98,15 @@ Vector2 GetAsteroidCenter(Asteroid *asteroid) {
                    .y = asteroid->position.y + asteroid->rec.height / 2.0};
 }
 
+int SpawnAsteroid(Asteroid *asteroids, int asteroid_idx) {
+  asteroids[asteroid_idx].inview = true;
+  asteroids[asteroid_idx].position =
+      (Vector2){.x = RANDINT(0, SCREEN_WIDTH), .y = 0};
+  asteroids[asteroid_idx].direction =
+      (Vector2){.x = RANDFLOAT(-0.5, 0.5), .y = 1};
+  return (asteroid_idx + 1) % NUM_ASTEROIDS;
+}
+
 Timer CreateTimer(double duration, bool repeat, bool autostart) {
   Timer timer = {0};
   timer.duration = duration;
@@ -124,15 +130,6 @@ void StopTimer(Timer *timer) {
   timer->start_time = -1.0;
   if (timer->repeat)
     StartTimer(timer);
-}
-
-int SpawnAsteroid(Asteroid *asteroids, int asteroid_idx) {
-  asteroids[asteroid_idx].inview = true;
-  asteroids[asteroid_idx].position =
-      (Vector2){.x = RANDINT(0, SCREEN_WIDTH), .y = 0};
-  asteroids[asteroid_idx].direction =
-      (Vector2){.x = RANDFLOAT(-0.5, 0.5), .y = 1};
-  return (asteroid_idx + 1) % NUM_ASTEROIDS;
 }
 
 int UpdateTimer(Timer *timer, Asteroid *asteroids, int asteroid_idx, double t) {
@@ -159,7 +156,7 @@ Boom *CreateBooms(Texture2D *texture) {
 int DrawBoom(Boom *booms, int boom_idx, Vector2 position) {
   booms[boom_idx].inview = true;
   booms[boom_idx].position = position;
-  return (boom_idx + 1) & NUM_EXPLOSIONS;
+  return (boom_idx + 1) % NUM_EXPLOSIONS;
 }
 
 void UpdateBoom(Boom *booms, float dt) {
@@ -228,7 +225,7 @@ int main() {
     //  -----------------------------------------------------------------------
     // updating the frame
     float dt = GetFrameTime(); // delta time
-    UpdateSpaceshipPosition(&spaceship, dt);
+    UpdateSpaceship(&spaceship, dt);
     UpdateLasers(lasers, dt);
     UpdateBoom(booms, dt);
 
@@ -307,9 +304,9 @@ int main() {
   UnloadTexture(spaceship.texture);
   UnloadTexture(star_texture);
   UnloadTexture(laser_texture);
+  free(lasers);
   UnloadTexture(asteroid_texture);
-  DeleteLasers(lasers);
-  DeleteStars(stars);
+  free(stars);
   CloseAudioDevice();
   CloseWindow();
 }

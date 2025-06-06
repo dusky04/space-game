@@ -34,7 +34,8 @@ typedef struct {
 } Spaceship;
 
 Spaceship CreateSpaceship(const char *filename);
-void UpdateSpaceshipPosition(Spaceship *spaceship, float dt);
+void UpdateSpaceship(Spaceship *spaceship, float dt);
+Vector2 GetSpaceShipCenter(Spaceship *spaceship);
 
 typedef struct {
   Vector2 position;
@@ -42,26 +43,29 @@ typedef struct {
 } Star;
 
 Star *CreateStars();
-void DeleteStars(Star *stars);
 
 typedef struct {
   Vector2 position;
-  bool inview;
   Rectangle rec;
+  bool inview;
 } Laser;
 
 Laser *CreateLasers();
 void UpdateLasers(Laser *lasers, float dt);
-void DeleteLasers(Laser *lasers);
 
 typedef struct {
   Vector2 position;
   Vector2 direction;
+  Rectangle rec;
   bool inview;
   double rotation;
   float collision_radius;
-  Rectangle rec;
 } Asteroid;
+
+Asteroid *CreateAsteroids(Texture2D *texture);
+void UpdateAsteroid(Asteroid *asteroids, float dt);
+Vector2 GetAsteroidCenter(Asteroid *asteroid);
+int SpawnAsteroid(Asteroid *asteroids, int asteroid_idx);
 
 typedef struct {
   double duration;
@@ -72,6 +76,8 @@ typedef struct {
 
 Timer CreateTimer(double duration, bool repeat, bool autostart);
 void StartTimer(Timer *timer);
+void StopTimer(Timer *timer);
+int UpdateTimer(Timer *timer, Asteroid *asteroids, int asteroid_idx, double t);
 
 typedef struct {
   Vector2 size;
@@ -79,5 +85,9 @@ typedef struct {
   bool inview;
   int index;
 } Boom;
+
+Boom *CreateBooms(Texture2D *texture);
+int DrawBoom(Boom *booms, int boom_idx, Vector2 position);
+void UpdateBoom(Boom *booms, float dt);
 
 #endif
