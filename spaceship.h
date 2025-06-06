@@ -70,7 +70,8 @@ typedef struct {
   Texture2D laser_texture;
   Texture2D asteroid_texture;
   Texture2D boom_textures[BOOM_ANIMATION_FRAMES];
-} Textures;
+  Sound laser_sound;
+} Assets;
 
 typedef struct {
   Spaceship ship;
@@ -83,7 +84,7 @@ typedef struct {
   int asteroid_idx;
 } Game;
 
-void CreateSpaceship(Game *game, Textures *textures);
+void CreateSpaceship(Game *game, Assets *assets);
 void UpdateSpaceship(Game *game, float dt);
 Vector2 GetSpaceShipCenter(Game *game);
 
@@ -92,7 +93,7 @@ void CreateStars(Game *game);
 void CreateLasers(Game *game);
 void UpdateLasers(Laser *lasers, float dt);
 
-void CreateAsteroids(Game *game, Textures *textures);
+void CreateAsteroids(Game *game, Assets *textures);
 void UpdateAsteroid(Asteroid *asteroids, float dt);
 Vector2 GetAsteroidCenter(Asteroid *asteroid);
 int SpawnAsteroid(Asteroid *asteroids, int asteroid_idx);
@@ -109,7 +110,7 @@ void StartTimer(Timer *timer);
 void StopTimer(Timer *timer);
 int UpdateTimer(Timer *timer, Asteroid *asteroids, int asteroid_idx, double t);
 
-void CreateBooms(Game *game, Textures *textures);
+void CreateBooms(Game *game, Assets *textures);
 int DrawBoom(Boom *booms, int boom_idx, Vector2 position);
 void UpdateBoom(Boom *booms, float dt);
 
