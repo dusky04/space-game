@@ -1,9 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
-#include "raylib.h"
 #include "spaceship.h"
 
 // TODO: improve asteroid collision with laser
@@ -286,7 +283,7 @@ void DrawGame(Game *game, Assets *assets) {
   EndDrawing();
 }
 
-void DeinitGame(Assets *assets) {
+void UnloadAssets(Assets *assets) {
   UnloadTexture(assets->ship_texture);
   UnloadTexture(assets->star_texture);
   UnloadTexture(assets->laser_texture);
@@ -295,33 +292,4 @@ void DeinitGame(Assets *assets) {
     UnloadTexture(assets->boom_textures[i]);
   }
   UnloadSound(assets->laser_sound);
-}
-
-int main() {
-  srand(time(NULL));
-
-  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Space");
-  InitAudioDevice();
-  SetExitKey(KEY_ESCAPE);
-  SetTargetFPS(60);
-
-  // load the assets
-  Assets assets = {0};
-  LoadAssets(&assets);
-
-  Game game = {0};
-  InitGame(&game, &assets);
-
-  // start the timer
-  Timer timer = CreateTimer(ASTEROID_DURATION, true, true);
-
-  while (!WindowShouldClose()) {
-    HandleInput(&game, &assets);
-    UpdateGame(&game, &timer, &assets, GetFrameTime());
-    DrawGame(&game, &assets);
-  }
-
-  DeinitGame(&assets);
-  CloseAudioDevice();
-  CloseWindow();
 }

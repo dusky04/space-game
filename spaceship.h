@@ -3,6 +3,8 @@
 
 #include "raylib.h"
 #include "raymath.h"
+#include <stdlib.h>
+#include <time.h>
 
 #define SCREEN_WIDTH 1000
 #define SCREEN_HEIGHT 750
@@ -98,6 +100,10 @@ void UpdateAsteroid(Asteroid *asteroids, float dt);
 Vector2 GetAsteroidCenter(Asteroid *asteroid);
 int SpawnAsteroid(Asteroid *asteroids, int asteroid_idx);
 
+void CreateBooms(Game *game, Assets *textures);
+int DrawBoom(Boom *booms, int boom_idx, Vector2 position);
+void UpdateBoom(Boom *booms, float dt);
+
 typedef struct {
   double duration;
   double start_time;
@@ -110,8 +116,11 @@ void StartTimer(Timer *timer);
 void StopTimer(Timer *timer);
 int UpdateTimer(Timer *timer, Asteroid *asteroids, int asteroid_idx, double t);
 
-void CreateBooms(Game *game, Assets *textures);
-int DrawBoom(Boom *booms, int boom_idx, Vector2 position);
-void UpdateBoom(Boom *booms, float dt);
+void LoadAssets(Assets *assets);
+void InitGame(Game *game, Assets *assets);
+void HandleInput(Game *game, Assets *assets);
+void UpdateGame(Game *game, Timer *timer, Assets *assets, float dt);
+void DrawGame(Game *game, Assets *assets);
+void UnloadAssets(Assets *assets);
 
 #endif
