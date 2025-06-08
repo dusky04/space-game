@@ -93,7 +93,8 @@ Vector2 GetSpaceShipCenter(Game *game);
 void CreateStars(Game *game);
 
 void CreateLasers(Game *game);
-void UpdateLasers(Laser *lasers, float dt);
+// void UpdateLasers(Laser *lasers, float dt);
+void UpdateLasers(Game *game, float dt, Assets *assets);
 
 void CreateAsteroids(Game *game, Assets *textures);
 void UpdateAsteroid(Asteroid *asteroids, float dt);

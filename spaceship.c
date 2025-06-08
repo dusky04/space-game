@@ -1,9 +1,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "raylib.h"
 #include "spaceship.h"
 
-// TODO: improve asteroid collision with laser
+// TODO: much better but fine tuning to be done
 // TODO: improve the behavior of explosions
 
 void CreateSpaceship(Game *game, Assets *assets) {
@@ -45,14 +46,18 @@ void CreateLasers(Game *game) {
   }
 }
 
-void UpdateLasers(Laser *lasers, float dt) {
+void UpdateLasers(Game *game, float dt, Assets *assets) {
   for (size_t i = 0; i < NUM_LASERS; i++) {
-    if (lasers[i].inview)
-      lasers[i].position.y -= dt * LASER_SPEED;
-
+    if (game->lasers[i].inview) {
+      game->lasers[i].position.y -= dt * LASER_SPEED;
+      game->lasers[i].rec = (Rectangle){.x = game->lasers[i].position.x,
+                                        .y = game->lasers[i].position.y,
+                                        .width = assets->laser_texture.width,
+                                        .height = assets->laser_texture.height};
+    }
     // if the laser is out of view, don't render it
-    if (lasers[i].position.y < 0)
-      lasers[i].inview = false;
+    if (game->lasers[i].position.y < 0)
+      game->lasers[i].inview = false;
   }
 }
 
@@ -86,8 +91,9 @@ void UpdateAsteroid(Asteroid *asteroids, float dt) {
 }
 
 Vector2 GetAsteroidCenter(Asteroid *asteroid) {
-  return (Vector2){.x = asteroid->position.x + asteroid->rec.width / 2.0,
-                   .y = asteroid->position.y + asteroid->rec.height / 2.0};
+  // return (Vector2){.x = asteroid->position.x + asteroid->rec.width / 2.0,
+  //  .y = asteroid->position.y + asteroid->rec.height / 2.0};
+  return asteroid->position;
 }
 
 int SpawnAsteroid(Asteroid *asteroids, int asteroid_idx) {
@@ -209,7 +215,7 @@ void HandleInput(Game *game, Assets *assets) {
 
 void UpdateGame(Game *game, Timer *timer, Assets *assets, float dt) {
   UpdateSpaceship(game, dt);
-  UpdateLasers(game->lasers, dt);
+  UpdateLasers(game, dt, assets);
   UpdateBoom(game->booms, dt);
 
   double t = GetTime();
